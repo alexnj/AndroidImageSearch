@@ -28,6 +28,10 @@
             android:name="com.alexnj.imagesearch.SingleImageActivity"
             android:label="@string/title_activity_single_image" >
         </activity>
+        <activity
+            android:name="com.alexnj.imagesearch.SettingsActivity"
+            android:label="@string/title_activity_settings" >
+        </activity>
     </application>
 
 </manifest>
