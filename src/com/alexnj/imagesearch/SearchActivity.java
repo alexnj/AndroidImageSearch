@@ -53,27 +53,18 @@ public class SearchActivity extends Activity {
 			}
 			
 		});
-	}
-
-	public void onFilterAction(MenuItem mi) {
-		Intent i = new Intent( getApplicationContext(), SettingsActivity.class );
-		startActivity(i);
-	}
-	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.search, menu);
-		return true;
+		
+		gvResults.setOnScrollListener( new EndlessScrollListener( ) {
+			@Override
+		    public void onLoadMore(int start) {
+	        	customLoadMoreDataFromApi( gvResults.getCount() ); 
+		    }
+        });
 	}
 	
-	public void setupViews() {
-		etSearchQuery = (EditText) findViewById(R.id.etSearchQuery);
-		gvResults = (GridView) findViewById(R.id.gvResults);
-		btnSearch = (Button) findViewById(R.id.btnSearch);
-	}
-	
-	public void onImageSearch(View v) {
+	public void customLoadMoreDataFromApi( int start ) {
+		Log.d("DEBUG", "customLoadMoreDataFromApi called with " + start);
+		
 		String query = etSearchQuery.getText().toString();
 		String prefSize = PreferenceManager.getDefaultSharedPreferences( this ).getString("size","");
 		String prefColor = PreferenceManager.getDefaultSharedPreferences( this ).getString("color","");
@@ -95,10 +86,10 @@ public class SearchActivity extends Activity {
 		
 		AsyncHttpClient client = new AsyncHttpClient();
 
-		Log.d( "DEBUG", "http://ajax.googleapis.com/ajax/services/search/images?rsz=8&start=" + 0 
+		Log.d( "DEBUG", "http://ajax.googleapis.com/ajax/services/search/images?rsz=8&start=" + start 
 				+ "&v=1.0&q=" + Uri.encode( query ) + prefSize + prefType + prefColor + prefSite );
 		
-		client.get("http://ajax.googleapis.com/ajax/services/search/images?rsz=8&start=" + 0 
+		client.get("http://ajax.googleapis.com/ajax/services/search/images?rsz=8&start=" + start 
 				+ "&v=1.0&q=" + Uri.encode( query ) + prefSize + prefType + prefColor + prefSite, 
 			new JsonHttpResponseHandler() {
 				@Override
@@ -106,14 +97,37 @@ public class SearchActivity extends Activity {
 					JSONArray imageJsonResults = null;
 					try {
 						imageJsonResults= response.getJSONObject( "responseData" ).getJSONArray("results");
-						irResults.clear();
 						imageAdapter.addAll(ImageResult.fromJSONArray(imageJsonResults));
-						Log.d("DEBUG", irResults.toString());
 					} catch( JSONException e ) {
 						e.printStackTrace();
 					}
 				}
-			});
+			}
+		);
+	}
+
+	public void onFilterAction(MenuItem mi) {
+		Intent i = new Intent( getApplicationContext(), SettingsActivity.class );
+		startActivity(i);
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.search, menu);
+		return true;
+	}
+	
+	public void setupViews() {
+		etSearchQuery = (EditText) findViewById(R.id.etSearchQuery);
+		gvResults = (GridView) findViewById(R.id.gvResults);
+		btnSearch = (Button) findViewById(R.id.btnSearch);
+	}
+	
+	public void onImageSearch(View v) {
+		irResults.clear();
+		customLoadMoreDataFromApi( 0 );
+		
 	}
 
 }
