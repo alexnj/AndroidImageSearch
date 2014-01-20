@@ -7,15 +7,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -35,6 +37,19 @@ public class SearchActivity extends Activity {
 		setupViews();
 		imageAdapter = new ImageResultArrayAdapter( this, irResults );
 		gvResults.setAdapter( imageAdapter );
+		
+		gvResults.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> adapter, View parent, int position, long arg3) {
+				Intent i = new Intent(getApplicationContext(), SingleImageActivity.class );
+				
+				ImageResult imageResult = irResults.get( position );
+				i.putExtra ( "image" , imageResult );
+				startActivity( i );
+			}
+			
+		});
 	}
 
 	@Override

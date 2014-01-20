@@ -1,12 +1,17 @@
 package com.alexnj.imagesearch;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ImageResult {
+public class ImageResult implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2893050467496880646L;
 	private String urlFull;
 	private String urlThumb;
 	
