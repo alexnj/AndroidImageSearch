@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,7 +19,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -31,6 +29,7 @@ public class SearchActivity extends Activity {
 	Button btnSearch;
 	ArrayList<ImageResult> irResults = new ArrayList<ImageResult>();
 	ImageResultArrayAdapter imageAdapter;
+	EndlessScrollListener scrollListener;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,17 +53,17 @@ public class SearchActivity extends Activity {
 			
 		});
 		
-		gvResults.setOnScrollListener( new EndlessScrollListener( ) {
+		this.scrollListener = new EndlessScrollListener( ) {
 			@Override
-		    public void onLoadMore(int start) {
-	        	customLoadMoreDataFromApi( gvResults.getCount() ); 
+		    public void onLoadMore( int start ) {
+	        	googleImageSearch( gvResults.getCount() ); 
 		    }
-        });
+        };
+        
+		gvResults.setOnScrollListener( this.scrollListener );
 	}
 	
-	public void customLoadMoreDataFromApi( int start ) {
-		Log.d("DEBUG", "customLoadMoreDataFromApi called with " + start);
-		
+	public void googleImageSearch( int start ) {		
 		String query = etSearchQuery.getText().toString();
 		String prefSize = PreferenceManager.getDefaultSharedPreferences( this ).getString("size","");
 		String prefColor = PreferenceManager.getDefaultSharedPreferences( this ).getString("color","");
@@ -86,9 +85,6 @@ public class SearchActivity extends Activity {
 		
 		AsyncHttpClient client = new AsyncHttpClient();
 
-		Log.d( "DEBUG", "http://ajax.googleapis.com/ajax/services/search/images?rsz=8&start=" + start 
-				+ "&v=1.0&q=" + Uri.encode( query ) + prefSize + prefType + prefColor + prefSite );
-		
 		client.get("http://ajax.googleapis.com/ajax/services/search/images?rsz=8&start=" + start 
 				+ "&v=1.0&q=" + Uri.encode( query ) + prefSize + prefType + prefColor + prefSite, 
 			new JsonHttpResponseHandler() {
@@ -96,6 +92,8 @@ public class SearchActivity extends Activity {
 				public void onSuccess( JSONObject response ) {
 					JSONArray imageJsonResults = null;
 					try {
+						int total = response.getJSONObject("responseData").getJSONObject("cursor").getInt("estimatedResultCount");
+						scrollListener.setTotal( total );
 						imageJsonResults= response.getJSONObject( "responseData" ).getJSONArray("results");
 						imageAdapter.addAll(ImageResult.fromJSONArray(imageJsonResults));
 					} catch( JSONException e ) {
@@ -126,8 +124,7 @@ public class SearchActivity extends Activity {
 	
 	public void onImageSearch(View v) {
 		irResults.clear();
-		customLoadMoreDataFromApi( 0 );
-		
+		googleImageSearch( 0 );		
 	}
 
 }

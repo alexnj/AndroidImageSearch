@@ -1,12 +1,11 @@
 package com.alexnj.imagesearch;
 
-import java.io.Serializable;
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.loopj.android.image.SmartImageView;
-
-import android.os.Bundle;
-import android.app.Activity;
-import android.view.Menu;
 
 public class SingleImageActivity extends Activity {
 
@@ -19,6 +18,7 @@ public class SingleImageActivity extends Activity {
 		
 		SmartImageView ivLargeImage = (SmartImageView) findViewById( R.id.ivLargeImage );
 		ivLargeImage.setImageUrl(image.getFullUrl() );
+		setTitle("");
 	}
 
 	@Override
@@ -26,6 +26,10 @@ public class SingleImageActivity extends Activity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.single_image, menu);
 		return true;
+	}
+	
+	public void onClickBack(MenuItem mi) {
+		finish();
 	}
 
 }

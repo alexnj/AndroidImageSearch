@@ -3,71 +3,39 @@ package com.alexnj.imagesearch;
 import android.util.Log;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
-import android.widget.GridView;
 
 public abstract class EndlessScrollListener implements OnScrollListener {
-	// The minimum amount of items to have below your current scroll position
-	// before loading more.
 	private int visibleThreshold = 5;
-	// The total number of items in the dataset after the last load
-	private int previousTotalItemCount = 0;
-	// True if we are still waiting for the last set of data to load.
-	private boolean loading = true;
-	// Sets the starting page index
+	private int total = 0;
+	private int lastRequested = 0;
 
-	public EndlessScrollListener( ) {
+	public int getTotal() {
+		return total;
+	}
+	
+	public void setTotal( int t ) {
+		this.total = t;
+		lastRequested = 0;
+	}
+	
+	public EndlessScrollListener() {
 	}
 
-	public EndlessScrollListener(int visibleThreshold) {
-		this.visibleThreshold = visibleThreshold;
-	}
-
-	public EndlessScrollListener(int visibleThreshold, int startIndex) {
-		this.visibleThreshold = visibleThreshold;
-	}
-
-	// This happens many times a second during a scroll, so be wary of the code you place here.
-	// We are given a few useful parameters to help us work out if we need to load some more data,
-	// but first we check if we are waiting for the previous load to finish.
 	@Override
-	public void onScroll(AbsListView view,int firstVisibleItem,int visibleItemCount,int totalItemCount) {
-		Log.d("DEBUG", "onScroll" + visibleItemCount + " and total " + totalItemCount);
-		// If the total item count is zero and the previous isn't, assume the
-		// list is invalidated and should be reset back to initial state
-		// If there are no items in the list, assume that initial items are loading
-		if (!loading && (totalItemCount < previousTotalItemCount)) {
-			this.previousTotalItemCount = totalItemCount;
-			if (totalItemCount == 0) { this.loading = true; } 
-		}
-
-		// If it’s still loading, we check to see if the dataset count has
-		// changed, if so we conclude it has finished loading and update the current page
-		// number and total item count.
-		if (loading) {
-			if (totalItemCount > previousTotalItemCount) {
-				loading = false;
-				previousTotalItemCount = totalItemCount;
+	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+		Log.d("DEBUG", "onScroll" + firstVisibleItem + " and firstVisibleItem " + visibleItemCount+ " and total " + totalItemCount);
+		if( firstVisibleItem + visibleItemCount >= totalItemCount - visibleThreshold ) {
+			if((totalItemCount < this.total) && (lastRequested < totalItemCount)) {
+				lastRequested = totalItemCount;
+				onLoadMore(totalItemCount);
 			}
 		}
-		
-		// If it isn’t currently loading, we check to see if we have breached
-		// the visibleThreshold and need to reload more data.
-		// If we do need to reload some more data, we execute onLoadMore to fetch the data.
-		if (!loading && (totalItemCount - visibleItemCount)<=(firstVisibleItem + visibleThreshold)) {
+	}		
 
-		    onLoadMore(totalItemCount+1);
-
-		}
-		
-	}
-
-	// Defines the process for actually loading more data based on page
 	public abstract void onLoadMore(int start);
 
 	@Override
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
-		// Don't take any action on changed
-		Log.d("DEBUG", "onScrollStateChanged called");
 	}
-
+	
 }
